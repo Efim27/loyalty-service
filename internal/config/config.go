@@ -10,6 +10,7 @@ type Config struct {
 	ServerAddr  string `mapstructure:"RUN_ADDRESS"`
 	DBSource    string `mapstructure:"DATABASE_URI"`
 	AccrualAddr string `mapstructure:"ACCRUAL_SYSTEM_ADDRESS"`
+	LogFile     string `mapstructure:"LOG_FILE"`
 }
 
 func (config *Config) LoadEnv(path string) (err error) {
