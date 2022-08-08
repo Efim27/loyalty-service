@@ -1,6 +1,8 @@
 package config
 
 import (
+	"flag"
+
 	"github.com/spf13/viper"
 )
 
@@ -10,7 +12,7 @@ type Config struct {
 	AccrualAddr string `mapstructure:"ACCRUAL_SYSTEM_ADDRESS"`
 }
 
-func LoadEnv(config *Config, path string) (err error) {
+func (config *Config) LoadEnv(path string) (err error) {
 	viper.AllowEmptyEnv(true)
 
 	viper.SetDefault("RUN_ADDRESS", "127.0.0.1:8081")
@@ -31,8 +33,17 @@ func LoadEnv(config *Config, path string) (err error) {
 	return
 }
 
-func LoadConfig(path string) (config Config, err error) {
-	LoadEnv(&config, "./config")
+func (config *Config) LoadFlags() {
+	flag.StringVar(&config.ServerAddr, "a", config.ServerAddr, "server address (host:port)")
+	flag.StringVar(&config.DBSource, "d", config.DBSource, "Postgres DSN")
+	flag.StringVar(&config.AccrualAddr, "r", config.AccrualAddr, "Accrual addr")
+
+	flag.Parse()
+}
+
+func LoadConfig() (config Config, err error) {
+	config.LoadFlags()
+	err = config.LoadEnv("./config")
 
 	return
 }
