@@ -43,8 +43,8 @@ func (config *Config) LoadFlags() {
 }
 
 func LoadConfig() (config Config, err error) {
-	config.LoadFlags()
 	err = config.LoadEnv("./config")
+	config.LoadFlags()
 
 	return
 }
