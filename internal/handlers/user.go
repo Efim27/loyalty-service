@@ -16,7 +16,7 @@ func (server *Server) userRegister(c *fiber.Ctx) (err error) {
 		Password string `form:"password"`
 	}{}
 	if err = c.BodyParser(&registerData); err != nil {
-		c.Status(400)
+		err = fiber.NewError(fiber.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -24,7 +24,7 @@ func (server *Server) userRegister(c *fiber.Ctx) (err error) {
 	err = user.GetOneByLogin(server.DB, registerData.Login)
 	if !errors.Is(sql.ErrNoRows, err) {
 		if err == nil {
-			err = fiber.NewError(409, "login is already taken")
+			err = fiber.NewError(fiber.StatusConflict, "login is already taken")
 			return
 		}
 
@@ -45,6 +45,48 @@ func (server *Server) userRegister(c *fiber.Ctx) (err error) {
 
 	tokenLifime := time.Now().Add(server.Config.TokenLifetime)
 	tokenJWT, err := newUser.TokenJWT(tokenLifime, server.Config.Secret)
+	if err != nil {
+		return
+	}
+
+	cookie := fiber.Cookie{
+		Name:     "Bearer",
+		Value:    tokenJWT,
+		Expires:  time.Now().Add(server.Config.TokenLifetime),
+		HTTPOnly: true,
+	}
+	c.Cookie(&cookie)
+
+	return c.JSON(fiber.Map{
+		"status": "ok",
+	})
+}
+
+func (server *Server) userLogin(c *fiber.Ctx) (err error) {
+	loginData := struct {
+		Login    string `form:"login"`
+		Password string `form:"password"`
+	}{}
+	if err = c.BodyParser(&loginData); err != nil {
+		err = fiber.NewError(fiber.StatusBadRequest, err.Error())
+		return
+	}
+
+	user := models.User{}
+	err = user.GetOneByLogin(server.DB, loginData.Login)
+	if errors.Is(sql.ErrNoRows, err) {
+		err = fiber.NewError(fiber.StatusUnauthorized, "user not found")
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password))
+	if err != nil {
+		err = fiber.NewError(fiber.StatusUnauthorized, "wrong password")
+		return
+	}
+
+	tokenLifime := time.Now().Add(server.Config.TokenLifetime)
+	tokenJWT, err := user.TokenJWT(tokenLifime, server.Config.Secret)
 	if err != nil {
 		return
 	}

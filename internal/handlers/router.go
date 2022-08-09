@@ -6,4 +6,5 @@ func SetupRoutes(server Server) {
 
 	apiUser := api.Group("/user")
 	apiUser.Post("/register", server.userRegister)
+	apiUser.Post("/login", server.userLogin)
 }
