@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"loyalty-service/internal/config"
 	"loyalty-service/internal/database"
@@ -55,6 +56,7 @@ func NewServer() Server {
 		log.Fatal(err)
 	}
 	server.Config = mainConfig
+	logger.Info("config loaded", zap.Any("config", server.Config))
 
 	server.DB = database.NewDatabase(server.Config.DBSource, server.Logger)
 
