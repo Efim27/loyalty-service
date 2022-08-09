@@ -10,6 +10,10 @@ import (
 	"loyalty-service/internal/database/models"
 )
 
+func (server *Server) test(c *fiber.Ctx) (err error) {
+	return c.SendString("Hi!")
+}
+
 func (server *Server) userRegister(c *fiber.Ctx) (err error) {
 	registerData := struct {
 		Login    string `form:"login"`

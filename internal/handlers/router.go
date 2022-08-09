@@ -1,7 +1,7 @@
 package handlers
 
 func SetupRoutes(server Server) {
-	//api := app.Group("/api", middleware.AuthReq())
+	//middlewareLoginRequired := middleware.NewLoginRequired(server.Config.Secret)
 	api := server.App.Group("/api")
 
 	apiUser := api.Group("/user")
