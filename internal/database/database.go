@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -18,11 +19,11 @@ func NewDatabase(DSN string, logger *logger.Logger) *sqlx.DB {
 		log.Fatalln(err)
 	}
 
-	//migrations := NewMigrationsHandler(db, logger)
-	//err = migrations.Up()
-	//if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-	//	logger.Fatal("migrations error", zap.Error(err))
-	//}
+	migrations := NewMigrationsHandler(db, logger)
+	err = migrations.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		logger.Fatal("migrations error", zap.Error(err))
+	}
 	logger.Info("migrations up successfully")
 
 	return db
