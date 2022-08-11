@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -46,7 +45,6 @@ func (server *Server) withdrawalList(c *fiber.Ctx) (err error) {
 	if !ok {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
-	log.Println()
 	userID, err := strconv.Atoi(tokenClaims.Issuer)
 	if err != nil {
 		return c.SendStatus(fiber.StatusUnauthorized)

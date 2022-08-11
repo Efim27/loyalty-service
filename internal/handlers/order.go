@@ -20,13 +20,13 @@ func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 	}
 
 	orderNumStr := string(c.Body())
-	orderNum, err := strconv.ParseInt(orderNumStr, 10, 64)
+	_, err = strconv.ParseInt(orderNumStr, 10, 64)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	orderByNum := models.Order{
-		Number: uint64(orderNum),
+		Number: orderNumStr,
 	}
 	if !orderByNum.CheckLuna() {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
@@ -42,7 +42,7 @@ func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 	}
 
 	newOrder := models.Order{
-		Number: uint64(orderNum),
+		Number: orderNumStr,
 		UserID: uint32(userID),
 	}
 	err = newOrder.Insert(server.DB)

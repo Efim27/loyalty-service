@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -16,7 +17,7 @@ const (
 
 type Order struct {
 	Id        uint32    `db:"id" json:"-" form:"id"`
-	Number    uint64    `db:"number" json:"number" form:"number"`
+	Number    string    `db:"number" json:"number" form:"number"`
 	UserID    uint32    `db:"user_id" json:"-" form:"user_id"`
 	Status    string    `db:"status" json:"status" form:"status"`
 	Accrual   float64   `db:"accrual" json:"accrual,omitempty" form:"accrual"`
@@ -39,7 +40,7 @@ func (order *Order) GetOne(DB *sqlx.DB, id uint32) error {
 	return DB.Get(order, `SELECT * FROM "order" WHERE id=$1`, id)
 }
 
-func (order *Order) GetOneByNumber(DB *sqlx.DB, number uint64) error {
+func (order *Order) GetOneByNumber(DB *sqlx.DB, number string) error {
 	return DB.Get(order, `SELECT * FROM "order" WHERE "number"=$1`, number)
 }
 
@@ -126,5 +127,10 @@ func (order Order) Delete(DB *sqlx.DB) error {
 }
 
 func (order Order) CheckLuna() bool {
-	return luna.Luna(int(order.Number))
+	orderNum, err := strconv.Atoi(order.Number)
+	if err != nil {
+		return false
+	}
+
+	return luna.Luna(orderNum)
 }
