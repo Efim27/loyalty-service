@@ -14,4 +14,6 @@ func SetupRoutes(server Server) {
 	apiOrder.Post("/", middlewareLoginRequired, server.orderNew)
 	apiOrder.Get("/", middlewareLoginRequired, server.orderList)
 
+	apiBalance := apiUser.Group("/balance")
+	apiBalance.Get("/", middlewareLoginRequired, server.balanceGet)
 }
