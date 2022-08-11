@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS "order"
+    DROP COLUMN user_id;

@@ -18,15 +18,15 @@ type User struct {
 func (User) GetAll(DB *sqlx.DB) ([]User, error) {
 	allRows := []User{}
 
-	return allRows, DB.Select(&allRows, "SELECT * FROM user")
+	return allRows, DB.Select(&allRows, `SELECT * FROM user`)
 }
 
 func (user *User) GetOne(DB *sqlx.DB, id uint32) error {
-	return DB.Get(user, "SELECT * FROM \"user\" WHERE id=$1", id)
+	return DB.Get(user, `SELECT * FROM "user" WHERE id=$1`, id)
 }
 
 func (user *User) GetOneByLogin(DB *sqlx.DB, login string) error {
-	return DB.Get(user, "SELECT * FROM \"user\" WHERE login=$1", login)
+	return DB.Get(user, `SELECT * FROM "user" WHERE login=$1`, login)
 }
 
 func (user *User) Insert(DB *sqlx.DB) error {
