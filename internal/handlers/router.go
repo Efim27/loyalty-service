@@ -16,4 +16,7 @@ func SetupRoutes(server Server) {
 
 	apiBalance := apiUser.Group("/balance")
 	apiBalance.Get("/", middlewareLoginRequired, server.balanceGet)
+
+	apiWithdrawal := apiUser.Group("/withdrawals")
+	apiWithdrawal.Get("/", middlewareLoginRequired, server.withdrawalList)
 }

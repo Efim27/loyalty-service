@@ -63,7 +63,7 @@ func (server *Server) orderList(c *fiber.Ctx) (err error) {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	orderList, err := models.Order{}.GetAllByUserOrderTime(server.DB, uint32(userID))
+	orderList, err := models.Order{}.GetAllByUserSortTime(server.DB, uint32(userID))
 	if len(orderList) == 0 {
 		return c.SendStatus(fiber.StatusNoContent)
 	}

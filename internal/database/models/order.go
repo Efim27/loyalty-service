@@ -29,7 +29,7 @@ func (Order) GetAll(DB *sqlx.DB) ([]Order, error) {
 	return allRows, DB.Select(&allRows, `SELECT * FROM "order"`)
 }
 
-func (Order) GetAllByUserOrderTime(DB *sqlx.DB, userID uint32) ([]Order, error) {
+func (Order) GetAllByUserSortTime(DB *sqlx.DB, userID uint32) ([]Order, error) {
 	allRows := []Order{}
 
 	return allRows, DB.Select(&allRows, `SELECT * FROM "order" WHERE user_id=$1 ORDER BY created_at DESC`, userID)

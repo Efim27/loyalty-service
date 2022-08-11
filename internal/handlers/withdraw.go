@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -38,4 +39,26 @@ func (server *Server) balanceGet(c *fiber.Ctx) (err error) {
 		"current":   user.Balance,
 		"withdrawn": userWithdrawn,
 	})
+}
+
+func (server *Server) withdrawalList(c *fiber.Ctx) (err error) {
+	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
+	if !ok {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	log.Println()
+	userID, err := strconv.Atoi(tokenClaims.Issuer)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	orderList, err := models.Withdrawal{}.GetAllByUserSortTime(server.DB, uint32(userID))
+	if len(orderList) == 0 {
+		return c.SendStatus(fiber.StatusNoContent)
+	}
+	if err != nil {
+		return
+	}
+
+	return c.JSON(orderList)
 }

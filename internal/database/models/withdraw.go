@@ -9,9 +9,9 @@ import (
 
 type Withdrawal struct {
 	Id          uint32    `db:"id" json:"-" form:"id"`
-	OrderNumber uint64    `db:"order_number" json:"order" form:"order"`
+	OrderNumber string    `db:"order_number" json:"order" form:"order"`
 	UserID      uint32    `db:"user_id" json:"-" form:"user_id"`
-	Sum         string    `db:"sum" json:"sum" form:"sum"`
+	Sum         int32     `db:"sum" json:"sum" form:"sum"`
 	ProcessedAt time.Time `db:"processed_at" json:"processed_at" form:"processed_at"`
 }
 
@@ -21,7 +21,7 @@ func (Withdrawal) GetAll(DB *sqlx.DB) ([]Withdrawal, error) {
 	return allRows, DB.Select(&allRows, `SELECT * FROM "withdrawal"`)
 }
 
-func (Withdrawal) GetAllByUserWithdrawalTime(DB *sqlx.DB, userID uint32) ([]Withdrawal, error) {
+func (Withdrawal) GetAllByUserSortTime(DB *sqlx.DB, userID uint32) ([]Withdrawal, error) {
 	allRows := []Withdrawal{}
 
 	return allRows, DB.Select(&allRows, `SELECT * FROM "withdrawal" WHERE user_id=$1 ORDER BY processed_at DESC`, userID)
