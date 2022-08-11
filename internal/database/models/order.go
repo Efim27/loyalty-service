@@ -17,9 +17,9 @@ const (
 type Order struct {
 	Id        uint32    `db:"id" json:"-" form:"id"`
 	Number    uint64    `db:"number" json:"number" form:"number"`
-	UserID    uint32    `db:"user_id" json:"user_id" form:"user_id"`
+	UserID    uint32    `db:"user_id" json:"-" form:"user_id"`
 	Status    string    `db:"status" json:"status" form:"status"`
-	Accrual   float64   `db:"accrual" json:"accrual" form:"accrual"`
+	Accrual   float64   `db:"accrual" json:"accrual,omitempty" form:"accrual"`
 	CreatedAt time.Time `db:"created_at" json:"uploaded_at" form:"uploaded_at"`
 }
 
@@ -27,6 +27,12 @@ func (Order) GetAll(DB *sqlx.DB) ([]Order, error) {
 	allRows := []Order{}
 
 	return allRows, DB.Select(&allRows, `SELECT * FROM "order"`)
+}
+
+func (Order) GetAllByUserOrderTime(DB *sqlx.DB, userID uint32) ([]Order, error) {
+	allRows := []Order{}
+
+	return allRows, DB.Select(&allRows, `SELECT * FROM "order" WHERE user_id=$1 ORDER BY created_at DESC`, userID)
 }
 
 func (order *Order) GetOne(DB *sqlx.DB, id uint32) error {

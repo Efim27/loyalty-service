@@ -52,3 +52,24 @@ func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 
 	return c.SendStatus(fiber.StatusAccepted)
 }
+
+func (server *Server) orderList(c *fiber.Ctx) (err error) {
+	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
+	if !ok {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	userID, err := strconv.Atoi(tokenClaims.Issuer)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	orderList, err := models.Order{}.GetAllByUserOrderTime(server.DB, uint32(userID))
+	if len(orderList) == 0 {
+		return c.SendStatus(fiber.StatusNoContent)
+	}
+	if err != nil {
+		return
+	}
+
+	return c.JSON(orderList)
+}

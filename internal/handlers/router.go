@@ -12,5 +12,6 @@ func SetupRoutes(server Server) {
 
 	apiOrder := apiUser.Group("/orders")
 	apiOrder.Post("/", middlewareLoginRequired, server.orderNew)
+	apiOrder.Get("/", middlewareLoginRequired, server.orderList)
 
 }
