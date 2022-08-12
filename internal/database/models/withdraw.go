@@ -11,7 +11,7 @@ type Withdrawal struct {
 	Id          uint32    `db:"id" json:"-" form:"id"`
 	OrderNumber string    `db:"order_number" json:"order" form:"order"`
 	UserID      uint32    `db:"user_id" json:"-" form:"user_id"`
-	Sum         int32     `db:"sum" json:"sum" form:"sum"`
+	Sum         float64   `db:"sum" json:"sum" form:"sum"`
 	ProcessedAt time.Time `db:"processed_at" json:"processed_at" form:"processed_at"`
 }
 
@@ -31,11 +31,15 @@ func (withdrawal *Withdrawal) GetOne(DB *sqlx.DB, id uint32) error {
 	return DB.Get(withdrawal, `SELECT * FROM "withdrawal" WHERE id=$1`, id)
 }
 
-func (withdrawal *Withdrawal) Insert(DB *sqlx.DB) error {
-	return withdrawal.insertOne(DB, nil)
+func (withdrawal *Withdrawal) GetOneByOrderNumber(DB *sqlx.DB, orderNumber uint32) error {
+	return DB.Get(withdrawal, `SELECT * FROM "withdrawal" WHERE order_number=$1`, orderNumber)
 }
 
-func (withdrawal *Withdrawal) insertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
+func (withdrawal *Withdrawal) Insert(DB *sqlx.DB) error {
+	return withdrawal.InsertOne(DB, nil)
+}
+
+func (withdrawal *Withdrawal) InsertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 	isSetTx := true
 	if tx == nil {
 		var err error
@@ -48,7 +52,7 @@ func (withdrawal *Withdrawal) insertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 		defer tx.Rollback()
 	}
 
-	result, err := DB.NamedQuery(`INSERT INTO "withdrawal"(order_number, user_id, sum, processed_at) VALUES (:order_number, :user_id, :sum, processed_at) RETURNING id`, withdrawal)
+	result, err := DB.NamedQuery(`INSERT INTO "withdrawal"(order_number, user_id, sum, processed_at) VALUES (:order_number, :user_id, :sum, CURRENT_TIMESTAMP) RETURNING id`, withdrawal)
 	if err != nil {
 		return err
 	}
@@ -71,7 +75,7 @@ func (withdrawal Withdrawal) InsertMany(DB *sqlx.DB, objectList []Withdrawal) er
 	defer tx.Rollback()
 
 	for _, object := range objectList {
-		err = object.insertOne(DB, tx)
+		err = object.InsertOne(DB, tx)
 		if err != nil {
 			return err
 		}

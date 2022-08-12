@@ -9,6 +9,7 @@ func SetupRoutes(server Server) {
 	apiUser := api.Group("/user")
 	apiUser.Post("/register", server.userRegister)
 	apiUser.Post("/login", server.userLogin)
+	apiUser.Get("/withdrawals", middlewareLoginRequired, server.withdrawalList)
 
 	apiOrder := apiUser.Group("/orders")
 	apiOrder.Post("/", middlewareLoginRequired, server.orderNew)
@@ -16,7 +17,5 @@ func SetupRoutes(server Server) {
 
 	apiBalance := apiUser.Group("/balance")
 	apiBalance.Get("/", middlewareLoginRequired, server.balanceGet)
-
-	apiWithdrawal := apiUser.Group("/withdrawals")
-	apiWithdrawal.Get("/", middlewareLoginRequired, server.withdrawalList)
+	apiBalance.Post("/withdraw", middlewareLoginRequired, server.withdrawalNew)
 }

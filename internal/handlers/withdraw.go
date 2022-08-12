@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -59,4 +61,49 @@ func (server *Server) withdrawalList(c *fiber.Ctx) (err error) {
 	}
 
 	return c.JSON(orderList)
+}
+
+func (server *Server) withdrawalNew(c *fiber.Ctx) (err error) {
+	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
+	if !ok {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	userID, err := strconv.Atoi(tokenClaims.Issuer)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	user := models.User{}
+	err = user.GetOne(server.DB, uint32(userID))
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	withdrawalData := struct {
+		OrderNum string  `json:"order"`
+		Sum      float64 `json:"sum"`
+	}{}
+	if err = c.BodyParser(&withdrawalData); err != nil {
+		err = fiber.NewError(fiber.StatusBadRequest, err.Error())
+		return
+	}
+
+	orderNumInt, err := strconv.ParseInt(withdrawalData.OrderNum, 10, 64)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnprocessableEntity)
+	}
+
+	log.Println(withdrawalData.OrderNum)
+	err = user.Withdraw(server.DB, uint64(orderNumInt), withdrawalData.Sum)
+	if errors.Is(err, models.ErrOrderNumberLunaFailed) {
+		return c.SendStatus(fiber.StatusUnprocessableEntity)
+	}
+	if errors.Is(err, models.ErrSumMustBeGreaterThanBalance) {
+		return c.SendStatus(fiber.StatusPaymentRequired)
+	}
+	if err != nil {
+		return err
+	}
+
+	return
 }

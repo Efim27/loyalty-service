@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,20 +21,19 @@ func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 	}
 
 	orderNumStr := string(c.Body())
-	_, err = strconv.ParseInt(orderNumStr, 10, 64)
+	orderNum, err := strconv.ParseInt(orderNumStr, 10, 64)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	orderByNum := models.Order{
-		Number: orderNumStr,
-	}
-	if !orderByNum.CheckLuna() {
+	//Luna check
+	orderByNum, err := models.NewOrder(uint64(orderNum))
+	if errors.Is(err, models.ErrOrderNumberLunaFailed) {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
 	}
 
 	err = orderByNum.GetOneByNumber(server.DB, orderByNum.Number)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return
 	} else if orderByNum.UserID == uint32(userID) {
 		return c.SendStatus(fiber.StatusOK)

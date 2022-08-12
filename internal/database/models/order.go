@@ -1,12 +1,15 @@
 package models
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"loyalty-service/internal/utils/luna"
 )
+
+var ErrOrderNumberLunaFailed = errors.New("luna check failed")
 
 const (
 	OrderStatusNew        = "NEW"
@@ -22,6 +25,17 @@ type Order struct {
 	Status    string    `db:"status" json:"status" form:"status"`
 	Accrual   float64   `db:"accrual" json:"accrual,omitempty" form:"accrual"`
 	CreatedAt time.Time `db:"created_at" json:"uploaded_at" form:"uploaded_at"`
+}
+
+func NewOrder(number uint64) (order *Order, err error) {
+	order = &Order{}
+	if !luna.Luna(int(number)) {
+		err = ErrOrderNumberLunaFailed
+		return
+	}
+
+	order.Number = strconv.FormatInt(int64(number), 10)
+	return
 }
 
 func (Order) GetAll(DB *sqlx.DB) ([]Order, error) {

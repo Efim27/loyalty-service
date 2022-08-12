@@ -1,12 +1,17 @@
 package models
 
 import (
+	"errors"
+	"log"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
 )
+
+var ErrSumMustBePositive = errors.New("sum must be positive")
+var ErrSumMustBeGreaterThanBalance = errors.New("sum must be greater than the user balance")
 
 type User struct {
 	Id       uint32  `db:"id" json:"id" form:"id"`
@@ -117,5 +122,68 @@ func (user User) TokenJWT(expiresAt time.Time, secret string) (token string, err
 	})
 
 	token, err = claims.SignedString([]byte(secret))
+	return
+}
+
+func (user User) UpdateBalance(DB *sqlx.DB, delta float64, tx *sqlx.Tx) (err error) {
+	isSetTx := true
+	if tx == nil {
+		var err error
+		tx, err = DB.Beginx()
+		if err != nil {
+			return err
+		}
+
+		isSetTx = false
+		defer tx.Rollback()
+	}
+
+	_, err = DB.Exec(`UPDATE "user" SET balance=balance+$1 WHERE id=$2;`, delta, user.Id)
+
+	if !isSetTx {
+		tx.Commit()
+	}
+	return
+}
+
+func (user User) Withdraw(DB *sqlx.DB, orderNum uint64, sum float64) (err error) {
+	if sum < 0 {
+		return ErrSumMustBePositive
+	}
+
+	if user.Balance < sum {
+		return ErrSumMustBeGreaterThanBalance
+	}
+
+	//Luna check
+	_, err = NewOrder(orderNum)
+	if err != nil {
+		return
+	}
+
+	tx, err := DB.Beginx()
+	defer tx.Rollback()
+	if err != nil {
+		return
+	}
+
+	withdrawal := Withdrawal{
+		UserID:      user.Id,
+		OrderNumber: strconv.FormatInt(int64(orderNum), 10),
+		Sum:         sum,
+	}
+	log.Println(int64(orderNum))
+	log.Println(withdrawal.OrderNumber)
+	err = withdrawal.InsertOne(DB, tx)
+	if err != nil {
+		return
+	}
+
+	err = user.UpdateBalance(DB, -sum, tx)
+	if err != nil {
+		return
+	}
+
+	tx.Commit()
 	return
 }
