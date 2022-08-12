@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -93,7 +92,6 @@ func (server *Server) withdrawalNew(c *fiber.Ctx) (err error) {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
 	}
 
-	log.Println(withdrawalData.OrderNum)
 	err = user.Withdraw(server.DB, uint64(orderNumInt), withdrawalData.Sum)
 	if errors.Is(err, models.ErrOrderNumberLunaFailed) {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)

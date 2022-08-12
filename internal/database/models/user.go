@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"time"
 
@@ -172,8 +171,7 @@ func (user User) Withdraw(DB *sqlx.DB, orderNum uint64, sum float64) (err error)
 		OrderNumber: strconv.FormatInt(int64(orderNum), 10),
 		Sum:         sum,
 	}
-	log.Println(int64(orderNum))
-	log.Println(withdrawal.OrderNumber)
+
 	err = withdrawal.InsertOne(DB, tx)
 	if err != nil {
 		return
