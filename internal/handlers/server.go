@@ -49,17 +49,17 @@ func NewServer() Server {
 		App: fiber.New(GetFiberConfig()),
 	}
 
-	logger, err := main_logger.NewLogger(zapcore.DebugLevel)
-	if err != nil {
-		log.Fatal(err)
-	}
-	server.Logger = logger
-
 	mainConfig, err := config.LoadConfig()
 	if err != nil {
 		server.Logger.Fatal("loading config error", zap.Error(err))
 	}
 	server.Config = mainConfig
+
+	logger, err := main_logger.NewLogger(zapcore.DebugLevel, server.Config.LogFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.Logger = logger
 	server.Logger.Info("config loaded", zap.Any("config", server.Config))
 
 	server.DB = database.NewDatabase(server.Config.DBSource, server.Logger)
@@ -84,7 +84,7 @@ func (server Server) Run() {
 
 	server.setupMiddlewares()
 	SetupRoutes(server)
-	
+
 	err := server.App.Listen(server.Config.ServerAddr)
 	if err != nil {
 		server.Logger.Error("stopping down server error", zap.Error(err))

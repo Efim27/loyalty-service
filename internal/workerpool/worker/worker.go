@@ -34,7 +34,7 @@ func (w *OutputWorker) handleAccrual(orderNum string) (retryAfter time.Duration,
 			"addr":     w.AccrualServerAddr,
 			"orderNum": orderNum,
 		}).
-		Get("http://{addr}/api/orders/{orderNum}")
+		Get("{addr}/api/orders/{orderNum}")
 	if err != nil {
 		return
 	}

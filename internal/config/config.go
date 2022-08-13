@@ -13,6 +13,7 @@ type HTTPClientConfig struct {
 	RetryWaitTime    time.Duration `mapstructure:"HTTP_RETRY_CONN_WAIT_TIME"`
 	RetryMaxWaitTime time.Duration `mapstructure:"HTTP_RETRY_CONN_MAX_WAIT_TIME"`
 	AccrualAddr      string        `mapstructure:"ACCRUAL_SYSTEM_ADDRESS"`
+	LogFileJSON      string        `mapstructure:"LOG_FILE"`
 }
 
 type Config struct {
@@ -31,6 +32,7 @@ func (config *Config) LoadEnv(path string) (err error) {
 	viper.SetDefault("HTTP_RETRY_CONN_WAIT_TIME", 10*time.Second)
 	viper.SetDefault("HTTP_RETRY_CONN_MAX_WAIT_TIME", 60*time.Second)
 	viper.SetDefault("ACCRUAL_SYSTEM_ADDRESS", "127.0.0.1:8081")
+	viper.SetDefault("LOG_FILE", "")
 
 	viper.SetDefault("DATABASE_URI", "")
 	viper.SetDefault("RUN_ADDRESS", "127.0.0.1:8080")
