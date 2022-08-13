@@ -1,43 +1,106 @@
 package worker
 
 import (
-	"log"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/go-resty/resty/v2"
+	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	controller_handlers "object-control/internal/server/controller-handlers"
-	"object-control/internal/server/database/models"
+	"go.uber.org/zap"
+	"loyalty-service/internal/database/models"
+	main_logger "loyalty-service/internal/logger"
+)
+
+var (
+	ErrTooManyRequests            = errors.New("too many requests")
+	ErrAccrualHandlingNotFinished = errors.New("accrual handling not finished")
 )
 
 type OutputWorker struct {
-	Ch            chan models.Controller
-	TimeoutModbus time.Duration
-	DB            *sqlx.DB
+	Ch                chan string
+	DB                *sqlx.DB
+	AccrualServerAddr string
+	Client            *resty.Client
+	Logger            *main_logger.Logger
 }
 
-func readPocket(controller models.Controller, DB *sqlx.DB, timeout time.Duration) {
-	pocketReader, err := controller_handlers.NewControllerHandler(controller, timeout)
-	defer func() {
-		if err := recover(); err != nil {
-			log.Println("cant connect to controller", controller.Id)
-			return
-		}
-	}()
-	defer pocketReader.Close()
+func (w *OutputWorker) handleAccrual(orderNum string) (err error, retryAfter time.Duration) {
+	resp, err := w.Client.R().
+		SetPathParams(map[string]string{
+			"addr":     w.AccrualServerAddr,
+			"orderNum": orderNum,
+		}).
+		Get("http://{addr}/api/orders/{orderNum}")
 	if err != nil {
-		log.Println("scanner error while connecting to controller", err)
 		return
 	}
 
-	_, err = pocketReader.ReadPocket(DB)
-	if err != nil {
-		log.Println("scanner error while reading pocket", err)
+	respStatusCode := resp.StatusCode()
+	if respStatusCode == fiber.StatusTooManyRequests {
+		retryAfterStr := resp.Header().Get("Retry-After")
+		var retryAfterNumSeconds int
+		retryAfterNumSeconds, err = strconv.Atoi(retryAfterStr)
+		if err != nil {
+			return
+		}
+
+		err = ErrTooManyRequests
+		retryAfter = time.Duration(retryAfterNumSeconds) * time.Second
+		return
 	}
+
+	if respStatusCode == fiber.StatusOK {
+		order := models.Order{}
+		err = order.GetOneByNumber(w.DB, orderNum)
+		if err != nil {
+			return
+		}
+
+		err = json.Unmarshal(resp.Body(), &order)
+		if err != nil {
+			return
+		}
+
+		if order.Status == models.OrderStatusRegistered || order.Status == models.OrderStatusProcessing {
+			err = ErrAccrualHandlingNotFinished
+			return
+		}
+
+		if order.Status == models.OrderStatusNew {
+			return
+		}
+
+		err = order.Update(w.DB, order, nil)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	errMsg := fmt.Sprintf("unhandled status code %v", respStatusCode)
+	err = errors.New(errMsg)
+	return
 }
 
 func (w *OutputWorker) Do() {
-	for controller := range w.Ch {
-		readPocket(controller, w.DB, w.TimeoutModbus)
+	for orderNum := range w.Ch {
+		err, retryAfter := w.handleAccrual(orderNum)
+		if errors.Is(err, ErrAccrualHandlingNotFinished) {
+			w.Ch <- orderNum
+		}
+
+		if errors.Is(err, ErrTooManyRequests) {
+			time.Sleep(retryAfter)
+			w.Ch <- orderNum
+		}
+
+		if err != nil {
+			w.Logger.Error("handler accrual error", zap.Error(err))
+		}
 	}
 
 	return

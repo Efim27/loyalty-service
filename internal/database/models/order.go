@@ -13,6 +13,7 @@ var ErrOrderNumberLunaFailed = errors.New("luna check failed")
 
 const (
 	OrderStatusNew        = "NEW"
+	OrderStatusRegistered = "REGISTERED"
 	OrderStatusProcessing = "PROCESSING"
 	OrderStatusInvalid    = "INVALID"
 	OrderStatusProcessed  = "PROCESSED"

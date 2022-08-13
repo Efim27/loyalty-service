@@ -49,6 +49,7 @@ func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 	if err != nil {
 		return
 	}
+	server.OrderAccrualHandlerChan <- orderNumStr
 
 	return c.SendStatus(fiber.StatusAccepted)
 }

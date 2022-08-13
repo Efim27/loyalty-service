@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,16 +11,19 @@ import (
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	client_http "loyalty-service/internal/client-http"
 	"loyalty-service/internal/config"
 	"loyalty-service/internal/database"
 	main_logger "loyalty-service/internal/logger"
+	"loyalty-service/internal/workerpool"
 )
 
 type Server struct {
-	App    *fiber.App
-	DB     *sqlx.DB
-	Config config.Config
-	Logger *main_logger.Logger
+	App                     *fiber.App
+	DB                      *sqlx.DB
+	Config                  config.Config
+	Logger                  *main_logger.Logger
+	OrderAccrualHandlerChan chan<- string
 }
 
 func fiberErrorHandler(ctx *fiber.Ctx, err error) error {
@@ -72,6 +76,13 @@ func (server *Server) setupMiddlewares() {
 func (server Server) Run() {
 	server.setupMiddlewares()
 	SetupRoutes(server)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	clientHTTP := client_http.NewClientHTTP(server.Config.HTTPClient)
+	orderAccrualHandler, OrderAccrualHandlerChan := workerpool.NewOrderAccrualHandler(ctx, server.Config.HTTPClient.AccrualAddr, 4, server.DB, server.Logger, clientHTTP)
+	server.OrderAccrualHandlerChan = OrderAccrualHandlerChan
+	go orderAccrualHandler.Start()
 
 	server.App.Listen(server.Config.ServerAddr)
 }
