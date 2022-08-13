@@ -78,6 +78,17 @@ func (w *OutputWorker) handleAccrual(orderNum string) (retryAfter time.Duration,
 		if err != nil {
 			return
 		}
+
+		user := models.User{}
+		err = user.GetOne(w.DB, order.UserID)
+		if err != nil {
+			return
+		}
+		err = user.UpdateBalance(w.DB, order.Accrual, nil)
+		if err != nil {
+			return
+		}
+
 		return
 	}
 

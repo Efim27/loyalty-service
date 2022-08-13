@@ -60,7 +60,6 @@ func NewServer() Server {
 		server.Logger.Fatal("loading config error", zap.Error(err))
 	}
 	server.Config = mainConfig
-	log.Println(mainConfig)
 	server.Logger.Info("config loaded", zap.Any("config", server.Config))
 
 	server.DB = database.NewDatabase(server.Config.DBSource, server.Logger)
@@ -75,16 +74,17 @@ func (server *Server) setupMiddlewares() {
 }
 
 func (server Server) Run() {
-	server.setupMiddlewares()
-	SetupRoutes(server)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	clientHTTP := client_http.NewClientHTTP(server.Config.HTTPClient)
 	orderAccrualHandler, OrderAccrualHandlerChan := workerpool.NewOrderAccrualHandler(ctx, server.Config.HTTPClient.AccrualAddr, 4, server.DB, server.Logger, clientHTTP)
+
 	server.OrderAccrualHandlerChan = OrderAccrualHandlerChan
 	go orderAccrualHandler.Start()
 
+	server.setupMiddlewares()
+	SetupRoutes(server)
+	
 	err := server.App.Listen(server.Config.ServerAddr)
 	if err != nil {
 		server.Logger.Error("stopping down server error", zap.Error(err))

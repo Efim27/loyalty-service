@@ -6,7 +6,7 @@ import (
 )
 
 func NewClientHTTP(config config.HTTPClientConfig) (client *resty.Client) {
-	client = &resty.Client{}
+	client = resty.New()
 
 	client.
 		SetRetryCount(config.RetryCount).
