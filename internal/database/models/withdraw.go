@@ -56,6 +56,10 @@ func (withdrawal *Withdrawal) InsertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 	if err != nil {
 		return err
 	}
+	err = result.Err()
+	if err != nil {
+		return err
+	}
 	defer result.Close()
 	result.Next()
 	err = result.Scan(&withdrawal.ID)
@@ -118,6 +122,10 @@ func (withdrawal Withdrawal) Delete(DB *sqlx.DB) error {
 
 func (withdrawal Withdrawal) GetSumByUser(DB *sqlx.DB, userID uint32) (userSum sql.NullInt32, err error) {
 	result, err := DB.Query(`SELECT SUM(sum) FROM withdrawal WHERE user_id=$1;`, userID)
+	if err != nil {
+		return
+	}
+	err = result.Err()
 	if err != nil {
 		return
 	}

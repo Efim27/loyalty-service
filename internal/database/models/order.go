@@ -81,7 +81,12 @@ func (order *Order) insertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 	if err != nil {
 		return err
 	}
+	err = result.Err()
+	if err != nil {
+		return err
+	}
 	defer result.Close()
+
 	if !result.Next() {
 		return ErrScan
 	}

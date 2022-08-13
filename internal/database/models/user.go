@@ -54,6 +54,10 @@ func (user *User) insertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 	if err != nil {
 		return err
 	}
+	err = result.Err()
+	if err != nil {
+		return err
+	}
 	defer result.Close()
 	result.Next()
 	err = result.Scan(&user.ID)
