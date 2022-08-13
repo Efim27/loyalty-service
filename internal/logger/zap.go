@@ -17,10 +17,10 @@ func NewLogger(defaultLogLevel zapcore.Level) (logger *Logger, err error) {
 	config := zap.NewProductionEncoderConfig()
 	config.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	logger.logFileJSON, err = os.OpenFile("./logs/log-json.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return
-	}
+	//logger.logFileJSON, err = os.OpenFile("./logs/log-json.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	//if err != nil {
+	//	return
+	//}
 
 	core := logger.getLoggerTee(config, defaultLogLevel)
 	logger.Logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
@@ -38,15 +38,16 @@ func (logger Logger) getLoggerTee(config zapcore.EncoderConfig, defaultLogLevel 
 		return
 	}
 
-	fileEncoderJSON := zapcore.NewJSONEncoder(config)
-	writer := zapcore.AddSync(logger.logFileJSON)
+	//fileEncoderJSON := zapcore.NewJSONEncoder(config)
+	//writer := zapcore.AddSync(logger.logFileJSON)
 	core = zapcore.NewTee(
-		zapcore.NewCore(fileEncoderJSON, writer, defaultLogLevel),
+		//zapcore.NewCore(fileEncoderJSON, writer, defaultLogLevel),
 		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
 	)
 	return
 }
 
 func (logger Logger) Close() error {
-	return logger.logFileJSON.Close()
+	//return logger.logFileJSON.Close()
+	return nil
 }
