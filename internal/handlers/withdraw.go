@@ -25,14 +25,14 @@ func (server *Server) balanceGet(c *fiber.Ctx) (err error) {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	var userWithdrawn int32 = 0
+	var userWithdrawn float64 = 0
 	userWithdrawnNull, err := models.Withdrawal{}.GetSumByUser(server.DB, user.ID)
 	if err != nil {
 		return
 	}
 
 	if userWithdrawnNull.Valid {
-		userWithdrawn = userWithdrawnNull.Int32
+		userWithdrawn = userWithdrawnNull.Float64
 	}
 
 	return c.JSON(fiber.Map{

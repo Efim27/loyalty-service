@@ -120,7 +120,7 @@ func (withdrawal Withdrawal) Delete(DB *sqlx.DB) error {
 	return err
 }
 
-func (withdrawal Withdrawal) GetSumByUser(DB *sqlx.DB, userID uint32) (userSum sql.NullInt32, err error) {
+func (withdrawal Withdrawal) GetSumByUser(DB *sqlx.DB, userID uint32) (userSum sql.NullFloat64, err error) {
 	result, err := DB.Query(`SELECT SUM(sum) FROM withdrawal WHERE user_id=$1;`, userID)
 	if err != nil {
 		return

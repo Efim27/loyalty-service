@@ -89,6 +89,11 @@ func (w *OutputWorker) handleAccrual(orderNum string) (retryAfter time.Duration,
 		return
 	}
 
+	if respStatusCode == fiber.StatusNoContent {
+		w.Logger.Info("handler accrual", zap.Int("StatusCode", respStatusCode))
+		return
+	}
+
 	errMsg := fmt.Sprintf("unhandled status code %v", respStatusCode)
 	err = errors.New(errMsg)
 	return
