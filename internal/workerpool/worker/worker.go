@@ -28,7 +28,7 @@ type OutputWorker struct {
 	Logger            *main_logger.Logger
 }
 
-func (w *OutputWorker) handleAccrual(orderNum string) (err error, retryAfter time.Duration) {
+func (w *OutputWorker) handleAccrual(orderNum string) (retryAfter time.Duration, err error) {
 	resp, err := w.Client.R().
 		SetPathParams(map[string]string{
 			"addr":     w.AccrualServerAddr,
@@ -88,7 +88,7 @@ func (w *OutputWorker) handleAccrual(orderNum string) (err error, retryAfter tim
 
 func (w *OutputWorker) Do() {
 	for orderNum := range w.Ch {
-		err, retryAfter := w.handleAccrual(orderNum)
+		retryAfter, err := w.handleAccrual(orderNum)
 		if errors.Is(err, ErrAccrualHandlingNotFinished) {
 			w.Ch <- orderNum
 		}
@@ -102,6 +102,4 @@ func (w *OutputWorker) Do() {
 			w.Logger.Error("handler accrual error", zap.Error(err))
 		}
 	}
-
-	return
 }

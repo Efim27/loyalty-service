@@ -20,7 +20,7 @@ const (
 )
 
 type Order struct {
-	Id        uint32    `db:"id" json:"-" form:"id"`
+	ID        uint32    `db:"id" json:"-" form:"id"`
 	Number    string    `db:"number" json:"number" form:"number"`
 	UserID    uint32    `db:"user_id" json:"-" form:"user_id"`
 	Status    string    `db:"status" json:"status" form:"status"`
@@ -82,8 +82,10 @@ func (order *Order) insertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 		return err
 	}
 	defer result.Close()
-	result.Next()
-	err = result.Scan(&order.Id)
+	if !result.Next() {
+		return ErrScan
+	}
+	err = result.Scan(&order.ID)
 
 	if !isSetTx {
 		tx.Commit()
@@ -123,7 +125,7 @@ func (order Order) Update(DB *sqlx.DB, newObject Order, tx *sqlx.Tx) error {
 		defer tx.Rollback()
 	}
 
-	newObject.Id = order.Id
+	newObject.ID = order.ID
 	_, err := DB.NamedExec(`UPDATE "order"
 	SET number=:number, status=:status, accrual=:accrual, created_at=:created_at, user_id=:user_id
 	WHERE id=:id`, newObject)
@@ -136,7 +138,7 @@ func (order Order) Update(DB *sqlx.DB, newObject Order, tx *sqlx.Tx) error {
 }
 
 func (order Order) Delete(DB *sqlx.DB) error {
-	_, err := DB.Exec(`DELETE FROM "order" WHERE id=$1;`, order.Id)
+	_, err := DB.Exec(`DELETE FROM "order" WHERE id=$1;`, order.ID)
 
 	return err
 }

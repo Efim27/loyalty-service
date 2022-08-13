@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"time"
 
@@ -29,9 +30,10 @@ func (config *Config) LoadEnv(path string) (err error) {
 	viper.SetDefault("HTTP_RETRY_CONN_COUNT", 2)
 	viper.SetDefault("HTTP_RETRY_CONN_WAIT_TIME", 10*time.Second)
 	viper.SetDefault("HTTP_RETRY_CONN_MAX_WAIT_TIME", 60*time.Second)
-	viper.SetDefault("ACCRUAL_SYSTEM_ADDRESS", "127.0.0.1:8080")
+	viper.SetDefault("ACCRUAL_SYSTEM_ADDRESS", "127.0.0.1:8081")
 
-	viper.SetDefault("RUN_ADDRESS", "127.0.0.1:8081")
+	viper.SetDefault("DATABASE_URI", "")
+	viper.SetDefault("RUN_ADDRESS", "127.0.0.1:8080")
 	viper.SetDefault("SECRET", "&7JHHOA8*I5un5iOt7Kr2MpXGfGl7a#O")
 	viper.SetDefault("TOKEN_LIFETIME", time.Hour*24*3)
 
@@ -42,7 +44,7 @@ func (config *Config) LoadEnv(path string) (err error) {
 	viper.AutomaticEnv()
 
 	err = viper.ReadInConfig()
-	if err != nil {
+	if err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
 		return
 	}
 
@@ -56,7 +58,7 @@ func (config *Config) LoadEnv(path string) (err error) {
 }
 
 func (config *Config) LoadFlags() {
-	flag.StringVar(&config.ServerAddr, "a", config.ServerAddr, "server address (host:port)")
+	flag.StringVar(&config.ServerAddr, "a", config.ServerAddr, "Server address (host:port)")
 	flag.StringVar(&config.DBSource, "d", config.DBSource, "Postgres DSN")
 	flag.StringVar(&config.HTTPClient.AccrualAddr, "r", config.HTTPClient.AccrualAddr, "Accrual addr")
 

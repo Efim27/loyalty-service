@@ -26,7 +26,7 @@ func (server *Server) balanceGet(c *fiber.Ctx) (err error) {
 	}
 
 	var userWithdrawn int32 = 0
-	userWithdrawnNull, err := models.Withdrawal{}.GetSumByUser(server.DB, user.Id)
+	userWithdrawnNull, err := models.Withdrawal{}.GetSumByUser(server.DB, user.ID)
 	if err != nil {
 		return
 	}

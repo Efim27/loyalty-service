@@ -13,7 +13,7 @@ var ErrSumMustBePositive = errors.New("sum must be positive")
 var ErrSumMustBeGreaterThanBalance = errors.New("sum must be greater than the user balance")
 
 type User struct {
-	Id       uint32  `db:"id" json:"id" form:"id"`
+	ID       uint32  `db:"id" json:"id" form:"id"`
 	Login    string  `db:"login" json:"login" form:"login"`
 	Password string  `db:"password" json:"password" form:"-"`
 	Balance  float64 `db:"balance" json:"balance" form:"balance"`
@@ -56,7 +56,7 @@ func (user *User) insertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 	}
 	defer result.Close()
 	result.Next()
-	err = result.Scan(&user.Id)
+	err = result.Scan(&user.ID)
 
 	if !isSetTx {
 		tx.Commit()
@@ -96,7 +96,7 @@ func (user User) Update(DB *sqlx.DB, newObject User, tx *sqlx.Tx) error {
 		defer tx.Rollback()
 	}
 
-	newObject.Id = user.Id
+	newObject.ID = user.ID
 	_, err := DB.NamedExec(`UPDATE "user"
 	SET login=:login, password=:password, balance=:balance
 	WHERE id=:id`, newObject)
@@ -109,14 +109,14 @@ func (user User) Update(DB *sqlx.DB, newObject User, tx *sqlx.Tx) error {
 }
 
 func (user User) Delete(DB *sqlx.DB) error {
-	_, err := DB.Exec(`DELETE FROM "user" WHERE id=$1;`, user.Id)
+	_, err := DB.Exec(`DELETE FROM "user" WHERE id=$1;`, user.ID)
 
 	return err
 }
 
 func (user User) TokenJWT(expiresAt time.Time, secret string) (token string, err error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Issuer:    strconv.Itoa(int(user.Id)),
+		Issuer:    strconv.Itoa(int(user.ID)),
 		ExpiresAt: jwt.NewNumericDate(expiresAt),
 	})
 
@@ -137,7 +137,7 @@ func (user User) UpdateBalance(DB *sqlx.DB, delta float64, tx *sqlx.Tx) (err err
 		defer tx.Rollback()
 	}
 
-	_, err = DB.Exec(`UPDATE "user" SET balance=balance+$1 WHERE id=$2;`, delta, user.Id)
+	_, err = DB.Exec(`UPDATE "user" SET balance=balance+$1 WHERE id=$2;`, delta, user.ID)
 
 	if !isSetTx {
 		tx.Commit()
@@ -167,7 +167,7 @@ func (user User) Withdraw(DB *sqlx.DB, orderNum uint64, sum float64) (err error)
 	}
 
 	withdrawal := Withdrawal{
-		UserID:      user.Id,
+		UserID:      user.ID,
 		OrderNumber: strconv.FormatInt(int64(orderNum), 10),
 		Sum:         sum,
 	}

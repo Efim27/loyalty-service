@@ -57,10 +57,10 @@ func NewServer() Server {
 
 	mainConfig, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		server.Logger.Fatal("loading config error", zap.Error(err))
 	}
 	server.Config = mainConfig
-	logger.Info("config loaded", zap.Any("config", server.Config))
+	server.Logger.Info("config loaded", zap.Any("config", server.Config))
 
 	server.DB = database.NewDatabase(server.Config.DBSource, server.Logger)
 

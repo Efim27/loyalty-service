@@ -1,4 +1,4 @@
-package client_http
+package clientHTTP
 
 import (
 	"github.com/go-resty/resty/v2"

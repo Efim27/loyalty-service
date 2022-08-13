@@ -8,7 +8,7 @@ import (
 )
 
 type Withdrawal struct {
-	Id          uint32    `db:"id" json:"-" form:"id"`
+	ID          uint32    `db:"id" json:"-" form:"id"`
 	OrderNumber string    `db:"order_number" json:"order" form:"order"`
 	UserID      uint32    `db:"user_id" json:"-" form:"user_id"`
 	Sum         float64   `db:"sum" json:"sum" form:"sum"`
@@ -58,7 +58,7 @@ func (withdrawal *Withdrawal) InsertOne(DB *sqlx.DB, tx *sqlx.Tx) error {
 	}
 	defer result.Close()
 	result.Next()
-	err = result.Scan(&withdrawal.Id)
+	err = result.Scan(&withdrawal.ID)
 
 	if !isSetTx {
 		tx.Commit()
@@ -98,7 +98,7 @@ func (withdrawal Withdrawal) Update(DB *sqlx.DB, newObject Withdrawal, tx *sqlx.
 		defer tx.Rollback()
 	}
 
-	newObject.Id = withdrawal.Id
+	newObject.ID = withdrawal.ID
 	_, err := DB.NamedExec(`UPDATE "withdrawal"
 	SET order_number=:order_number, user_id=:user_id, sum=:sum, processed_at=:processed_at
 	WHERE id=:id`, newObject)
@@ -111,7 +111,7 @@ func (withdrawal Withdrawal) Update(DB *sqlx.DB, newObject Withdrawal, tx *sqlx.
 }
 
 func (withdrawal Withdrawal) Delete(DB *sqlx.DB) error {
-	_, err := DB.Exec(`DELETE FROM "withdrawal" WHERE id=$1;`, withdrawal.Id)
+	_, err := DB.Exec(`DELETE FROM "withdrawal" WHERE id=$1;`, withdrawal.ID)
 
 	return err
 }
