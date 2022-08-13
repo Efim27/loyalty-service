@@ -29,12 +29,9 @@ type OutputWorker struct {
 }
 
 func (w *OutputWorker) handleAccrual(orderNum string) (retryAfter time.Duration, err error) {
+	AccrualServerAddr := fmt.Sprintf("%v/api/orders/%v", w.AccrualServerAddr, orderNum)
 	resp, err := w.Client.R().
-		SetPathParams(map[string]string{
-			"addr":     w.AccrualServerAddr,
-			"orderNum": orderNum,
-		}).
-		Get("{addr}/api/orders/{orderNum}")
+		Get(AccrualServerAddr)
 	if err != nil {
 		return
 	}
