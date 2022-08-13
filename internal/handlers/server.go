@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	client_http "loyalty-service/internal/client-http"
+	client_http "loyalty-service/internal/clienthttp"
 	"loyalty-service/internal/config"
 	"loyalty-service/internal/database"
 	main_logger "loyalty-service/internal/logger"
@@ -60,6 +60,7 @@ func NewServer() Server {
 		server.Logger.Fatal("loading config error", zap.Error(err))
 	}
 	server.Config = mainConfig
+	log.Println(mainConfig)
 	server.Logger.Info("config loaded", zap.Any("config", server.Config))
 
 	server.DB = database.NewDatabase(server.Config.DBSource, server.Logger)
@@ -84,5 +85,8 @@ func (server Server) Run() {
 	server.OrderAccrualHandlerChan = OrderAccrualHandlerChan
 	go orderAccrualHandler.Start()
 
-	server.App.Listen(server.Config.ServerAddr)
+	err := server.App.Listen(server.Config.ServerAddr)
+	if err != nil {
+		server.Logger.Error("stopping down server error", zap.Error(err))
+	}
 }
