@@ -1,8 +1,14 @@
 package handlers
 
-import "loyalty-service/internal/middleware"
+import (
+	"github.com/swaggo/fiber-swagger"
+	_ "loyalty-service/docs"
+	"loyalty-service/internal/middleware"
+)
 
 func SetupRoutes(server Server) {
+	server.App.Get("/swagger/*", fiberSwagger.WrapHandler)
+
 	middlewareLoginRequired := middleware.NewLoginRequired(server.Config.Secret)
 	api := server.App.Group("/api")
 

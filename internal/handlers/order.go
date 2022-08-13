@@ -10,6 +10,19 @@ import (
 	"loyalty-service/internal/database/models"
 )
 
+// @title New order
+// @Summary New order
+// @Tags Order
+// @Accept plain
+// @Param OrderNumber body string true "Order number (Luna check)"
+// @Success 200
+// @Success 202
+// @Failure 400
+// @Failure 401
+// @Failure 409
+// @Failure 422
+// @Failure 500
+// @Router /api/user/orders [post]
 func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
 	if !ok {
@@ -54,6 +67,15 @@ func (server *Server) orderNew(c *fiber.Ctx) (err error) {
 	return c.SendStatus(fiber.StatusAccepted)
 }
 
+// @title Order list
+// @Summary Order list
+// @Tags Order
+// @Produce json
+// @Success 200
+// @Success 204
+// @Failure 401
+// @Failure 500
+// @Router /api/user/orders [get]
 func (server *Server) orderList(c *fiber.Ctx) (err error) {
 	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
 	if !ok {

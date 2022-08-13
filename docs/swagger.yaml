@@ -1,0 +1,172 @@
+definitions:
+  handlers.AuthInput:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  handlers.withdrawalInput:
+    properties:
+      order:
+        type: string
+      sum:
+        type: number
+    type: object
+info:
+  contact:
+    email: efim-02@mail.ru
+    name: Efim
+    url: https://t.me/hima27
+  description: Cumulative loyalty system "Gofermart"
+  title: Loyalty Service
+  version: "1.1"
+paths:
+  /api/user/balance:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Balance
+      tags:
+      - Withdraw
+  /api/user/balance/withdraw:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: JSON
+        in: body
+        name: JSON
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.withdrawalInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+        "422":
+          description: Unprocessable Entity
+        "500":
+          description: Internal Server Error
+      summary: Withdraw
+      tags:
+      - Withdraw
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: JSON
+        in: body
+        name: JSON
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AuthInput'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: user login
+      tags:
+      - Auth
+  /api/user/orders:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Order list
+      tags:
+      - Order
+    post:
+      consumes:
+      - text/plain
+      parameters:
+      - description: Order number (Luna check)
+        in: body
+        name: OrderNumber
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "409":
+          description: Conflict
+        "422":
+          description: Unprocessable Entity
+        "500":
+          description: Internal Server Error
+      summary: New order
+      tags:
+      - Order
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: JSON
+        in: body
+        name: JSON
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AuthInput'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+        "500":
+          description: Internal Server Error
+      summary: user registration
+      tags:
+      - Auth
+  /api/user/withdrawals:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Withdraw List
+      tags:
+      - Withdraw
+schemes:
+- http
+swagger: "2.0"

@@ -10,15 +10,23 @@ import (
 	"loyalty-service/internal/database/models"
 )
 
-func (server *Server) test(c *fiber.Ctx) (err error) {
-	return c.SendString("Hi!")
+type AuthInput struct {
+	Login    string `form:"login"`
+	Password string `form:"password"`
 }
 
+// @title Registration
+// @Summary user registration
+// @Tags Auth
+// @Accept json
+// @Param JSON body handlers.AuthInput true "JSON"
+// @Success 200
+// @Failure 400
+// @Failure 409
+// @Failure 500
+// @Router /api/user/register [post]
 func (server *Server) userRegister(c *fiber.Ctx) (err error) {
-	registerData := struct {
-		Login    string `form:"login"`
-		Password string `form:"password"`
-	}{}
+	registerData := AuthInput{}
 	if err = c.BodyParser(&registerData); err != nil {
 		err = fiber.NewError(fiber.StatusBadRequest, err.Error())
 		return
@@ -66,11 +74,18 @@ func (server *Server) userRegister(c *fiber.Ctx) (err error) {
 	})
 }
 
+// @title Login
+// @Summary user login
+// @Tags Auth
+// @Accept json
+// @Param JSON body handlers.AuthInput true "JSON"
+// @Success 200
+// @Failure 400
+// @Failure 401
+// @Failure 500
+// @Router /api/user/login [post]
 func (server *Server) userLogin(c *fiber.Ctx) (err error) {
-	loginData := struct {
-		Login    string `form:"login"`
-		Password string `form:"password"`
-	}{}
+	loginData := AuthInput{}
 	if err = c.BodyParser(&loginData); err != nil {
 		err = fiber.NewError(fiber.StatusBadRequest, err.Error())
 		return

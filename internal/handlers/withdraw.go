@@ -9,6 +9,19 @@ import (
 	"loyalty-service/internal/database/models"
 )
 
+type withdrawalInput struct {
+	OrderNum string  `json:"order"`
+	Sum      float64 `json:"sum"`
+}
+
+// @title Balance
+// @Summary Balance
+// @Tags Withdraw
+// @Produce json
+// @Success 200
+// @Failure 401
+// @Failure 500
+// @Router /api/user/balance [get]
 func (server *Server) balanceGet(c *fiber.Ctx) (err error) {
 	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
 	if !ok {
@@ -41,6 +54,15 @@ func (server *Server) balanceGet(c *fiber.Ctx) (err error) {
 	})
 }
 
+// @title Withdraw List
+// @Summary Withdraw List
+// @Tags Withdraw
+// @Produce json
+// @Success 200
+// @Success 204
+// @Failure 401
+// @Failure 500
+// @Router /api/user/withdrawals [get]
 func (server *Server) withdrawalList(c *fiber.Ctx) (err error) {
 	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
 	if !ok {
@@ -62,6 +84,17 @@ func (server *Server) withdrawalList(c *fiber.Ctx) (err error) {
 	return c.JSON(orderList)
 }
 
+// @title Withdraw
+// @Summary Withdraw
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param JSON body handlers.withdrawalInput true "JSON"
+// @Success 200
+// @Failure 401
+// @Failure 422
+// @Failure 500
+// @Router /api/user/balance/withdraw [post]
 func (server *Server) withdrawalNew(c *fiber.Ctx) (err error) {
 	tokenClaims, ok := c.Locals("tokenClaims").(*jwt.RegisteredClaims)
 	if !ok {
@@ -78,10 +111,7 @@ func (server *Server) withdrawalNew(c *fiber.Ctx) (err error) {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	withdrawalData := struct {
-		OrderNum string  `json:"order"`
-		Sum      float64 `json:"sum"`
-	}{}
+	withdrawalData := withdrawalInput{}
 	if err = c.BodyParser(&withdrawalData); err != nil {
 		err = fiber.NewError(fiber.StatusBadRequest, err.Error())
 		return
