@@ -2,10 +2,8 @@ package tests
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http/httptest"
-	"testing"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/suite"
@@ -15,27 +13,13 @@ import (
 
 type AuthTestingSuite struct {
 	suite.Suite
-	serverCtxCancel context.CancelFunc
-	server          handlers.Server
+	server handlers.Server
 }
 
 func (suite *AuthTestingSuite) SetupSuite() {
-	ctx, cancel := context.WithCancel(context.Background())
-	suite.serverCtxCancel = cancel
-	suite.server = handlers.NewServer()
-	suite.server.Prepare(ctx)
 }
 
 func (suite *AuthTestingSuite) TearDownSuite() {
-	suite.serverCtxCancel()
-	err := suite.server.App.Shutdown()
-	if err != nil {
-		suite.T().Log(err)
-	}
-}
-
-func TestAuthSuite(t *testing.T) {
-	suite.Run(t, new(AuthTestingSuite))
 }
 
 func (suite *AuthTestingSuite) TestLoginEmpty() {
