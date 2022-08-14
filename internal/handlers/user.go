@@ -11,8 +11,8 @@ import (
 )
 
 type AuthInput struct {
-	Login    string `form:"login"`
-	Password string `form:"password"`
+	Login    string `json:"login" form:"login"`
+	Password string `json:"password" form:"password"`
 }
 
 // @title Registration

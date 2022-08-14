@@ -74,16 +74,7 @@ func (server *Server) setupMiddlewares() {
 	server.App.Use(compress.New())
 }
 
-// @title Loyalty Service
-// @version 1.1
-// @description Cumulative loyalty system "Gofermart"
-
-// @contact.name Efim
-// @contact.url https://t.me/hima27
-// @contact.email efim-02@mail.ru
-
-// @schemes http
-func (server Server) Run() {
+func (server Server) Prepare(ctx context.Context) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	clientHTTP := client_http.NewClientHTTP(server.Config.HTTPClient)
@@ -94,7 +85,18 @@ func (server Server) Run() {
 
 	server.setupMiddlewares()
 	SetupRoutes(server)
+}
 
+// @title Loyalty Service
+// @version 1.1
+// @description Cumulative loyalty system "Gofermart"
+
+// @contact.name Efim
+// @contact.url https://t.me/hima27
+// @contact.email efim-02@mail.ru
+
+// @schemes http
+func (server Server) Run() {
 	err := server.App.Listen(server.Config.ServerAddr)
 	if err != nil {
 		server.Logger.Error("stopping down server error", zap.Error(err))
