@@ -19,41 +19,41 @@ type MainTestingSuite struct {
 	client          *resty.Client
 }
 
-func (suite *MainTestingSuite) SetupSuite() {
-	suite.RunServer()
+func (mainSuite *MainTestingSuite) SetupSuite() {
+	mainSuite.RunServer()
 
-	suite.client = clienthttp.NewClientHTTP(suite.server.Config.HTTPClient)
-	suite.ClientAuth()
+	mainSuite.client = clienthttp.NewClientHTTP(mainSuite.server.Config.HTTPClient)
+	mainSuite.ClientAuth()
 }
 
-func (suite *MainTestingSuite) TearDownSuite() {
-	suite.serverCtxCancel()
-	err := suite.server.App.Shutdown()
+func (mainSuite *MainTestingSuite) TearDownSuite() {
+	mainSuite.serverCtxCancel()
+	err := mainSuite.server.App.Shutdown()
 	if err != nil {
-		suite.T().Log(err)
+		mainSuite.T().Log(err)
 	}
 }
 
-func (suite *MainTestingSuite) RunServer() {
+func (mainSuite *MainTestingSuite) RunServer() {
 	ctx, cancel := context.WithCancel(context.Background())
-	suite.serverCtxCancel = cancel
-	suite.server = handlers.NewServer()
-	suite.server.Prepare(ctx)
-	go suite.server.Run()
+	mainSuite.serverCtxCancel = cancel
+	mainSuite.server = handlers.NewServer()
+	mainSuite.server.Prepare(ctx)
+	go mainSuite.server.Run()
 }
 
-func (suite *MainTestingSuite) ClientAuth() {
+func (mainSuite *MainTestingSuite) ClientAuth() {
 	userInfo := handlers.AuthInput{
 		Login:    randomString(5),
 		Password: randomString(10),
 	}
-	resp, err := suite.client.R().SetBody(userInfo).SetPathParams(map[string]string{
-		"addr": suite.server.Config.ServerAddr,
+	resp, err := mainSuite.client.R().SetBody(userInfo).SetPathParams(map[string]string{
+		"addr": mainSuite.server.Config.ServerAddr,
 	}).Post("http://{addr}/api/user/register")
 	if err != nil || resp.StatusCode() != fiber.StatusOK {
-		suite.Fail("auth failed", err)
+		mainSuite.Fail("auth failed", err)
 	}
-	suite.client.SetCookies(resp.Cookies())
+	mainSuite.client.SetCookies(resp.Cookies())
 }
 
 func TestAllSuites(t *testing.T) {
