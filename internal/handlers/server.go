@@ -75,8 +75,6 @@ func (server *Server) setupMiddlewares() {
 }
 
 func (server Server) Prepare(ctx context.Context) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	clientHTTP := client_http.NewClientHTTP(server.Config.HTTPClient)
 	orderAccrualHandler, OrderAccrualHandlerChan := workerpool.NewOrderAccrualHandler(ctx, server.Config.HTTPClient.AccrualAddr, 4, server.DB, server.Logger, clientHTTP)
 
